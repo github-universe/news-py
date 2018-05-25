@@ -1,9 +1,11 @@
-import jieba
+import jieba.analyse
 from django.http import HttpResponse, JsonResponse
 from .models import News, NewsKeyword, Keyword, User
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
 import pysolr
+import json
+import requests
 
 
 class NewsListView:
@@ -76,35 +78,66 @@ def detail(request, newsId):
     return HttpResponse(JsonResponse(view.obj_dict(), safe=False), content_type="application/json")
 
 
+def get_similar_words(query_keywords):
+    similar_words = []
+    if len(query_keywords) > 0:
+        url = 'http://qa-compute.zhihuiya.com/compute/kwd_helper_cn/'
+        data = {
+            "data": {
+                "words": ','.join(query_keywords),
+                "topn": 3
+            },
+            "session": "string"
+        }
+        headers = {
+            'content-type': 'application/json',
+            'X-PatSnap-Version': 'v1'
+        }
+        res = requests.post(url, data=json.dumps(data), headers=headers)
+        res_data = json.loads(res.content)['data']
+        for d in res_data:
+            similar_words.append(d['keyword'])
+    return similar_words
+
+
 def save_to_solr(uid, openId, query):
     solr = pysolr.Solr('http://localhost:8983/patsnap/keyword', timeout=10)
     doc = dict()
     result = solr.search('USER_ID:' + uid)
 
-    query_gen = jieba.cut(query)
-    query_keywords = set()
-    for key in query_gen:
-        query_keywords.add(key)
-    keys = Keyword.objects.filter(keyword__in=query_keywords)
-    total_keywords = set()
-    if len(result) > 0:
-        for doc in result:
-            keywords = doc['KEYWORD']
+    query_keywords = set(jieba.analyse.extract_tags(query, topK=3))
+
+    similar_words = get_similar_words(query_keywords)
+    if len(result.docs) > 0:
+        for doc in result.docs:
+            if 'KEYWORD' in doc.keys():
+                keywords = doc.get('KEYWORD')
+            else:
+                keywords = []
+            total_keywords = set()
             for key in keywords:
                 total_keywords.add(key)
-            for key in keys:
+            for key in query_keywords:
                 total_keywords.add(key)
-            doc['KEYWORD'] = total_keywords
+            for key in similar_words:
+                total_keywords.add(key)
+            doc['KEYWORD'] = list(total_keywords)
         solr.add(result)
     else:
         doc['USER_ID'] = uid
         doc['OPEN_ID'] = openId
-        doc['KEYWORD'] = [k for k in keys]
+        doc['KEYWORD'] = list(query_keywords) + similar_words
         solr.add([doc])
 
 
+def cut(request, query):
+    words = jieba.cut(query)
+    return HttpResponse(JsonResponse([word for word in words], safe=False), content_type='application/json')
+
+
 def save_query(request, openId, query):
-    user = User.objects.filter(openid=openId)
-    if len(user) == 1:
-        save_to_solr(user[0].id, openId, query)
+    users = User.objects.filter(openid=openId)
+    if len(users) > 0:
+        for u in users:
+            save_to_solr(u.id, openId, query)
     return HttpResponse('success')

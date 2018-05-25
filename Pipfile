@@ -12,6 +12,7 @@ mysqlclient = "*"
 jieba = "*"
 django-cors-headers = "*"
 pysolr = "*"
+requests = "*"
 
 
 [dev-packages]
