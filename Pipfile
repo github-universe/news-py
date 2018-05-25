@@ -8,6 +8,10 @@ name = "pypi"
 [packages]
 
 django = "*"
+mysqlclient = "*"
+jieba = "*"
+django-cors-headers = "*"
+pysolr = "*"
 
 
 [dev-packages]

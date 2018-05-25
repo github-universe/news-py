@@ -1,1 +1,7 @@
 Pipefile.lock
+*.pyc
+*/.idea/*
+*.iml
+*.xml
+*.meta
+*.zip
