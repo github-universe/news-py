@@ -5,3 +5,4 @@ Pipefile.lock
 *.xml
 *.meta
 *.zip
+.env

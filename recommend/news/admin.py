@@ -1,7 +1,10 @@
+import json
+
 import pysolr
 from django.contrib import admin
-from .models import News, NewsKeyword, Keyword
+from .models import News, NewsKeyword, Keyword, NewsPatent
 import jieba.analyse
+import requests
 
 
 # Register your models here.
@@ -27,6 +30,20 @@ class NewsAdmin(admin.ModelAdmin):
                 new_key = Keyword()
                 new_key.keyword = k
                 new_key.save()
+        patents = []
+        for key in keywords:
+            if len(patents) >= 5:
+                break
+            url = 'http://192.168.5.179:8888/patent/simple/search?ttl=' + key
+            res = json.loads(requests.get(url).content)
+            num = min(5-len(patents), 2)
+            patents += res['patent'][:num]
+
+        for patent in patents:
+            news_patent = NewsPatent()
+            news_patent.news = obj
+            news_patent.patent_id = patent
+            news_patent.save()
 
         keys = Keyword.objects.filter(keyword__in=keywords)
 
@@ -41,9 +58,22 @@ class NewsAdmin(admin.ModelAdmin):
 
         solr = pysolr.Solr('http://localhost:8983/patsnap/keyword', timeout=10)
         result = solr.search("KEYWORD:(" + ' OR '.join(key_li) + ')')
+        if len(result) > 10:
+            result = result[:10]
         for r in result:
-            # TODO send notification
-            print(r)
+            url = 'http://192.168.14.151:8888/wxserver/send_message'
+            open_id = r['OPEN_ID']
+            data = {
+                "open_id": open_id,
+                "url": "http://192.168.14.217:8080/detail/" + str(obj.id),
+                "title": obj.title,
+                "content": obj.content[:100]
+            }
+            headers = {
+                'Content-Type': 'application/json',
+            }
+            print('SENDING NOTIFICATION: ' + data['open_id'])
+            requests.post(url, data=data, headers=headers)
 
 
 class KeywordAdmin(admin.ModelAdmin):

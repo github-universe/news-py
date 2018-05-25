@@ -1,5 +1,4 @@
 from django.db import models
-from django.utils import timezone
 
 
 # Create your models here.
@@ -25,6 +24,12 @@ class NewsKeyword(models.Model):
 
     news = models.ForeignKey(News, on_delete=models.CASCADE)
     keyword = models.ForeignKey(Keyword, on_delete=models.CASCADE)
+
+
+class NewsPatent(models.Model):
+
+    news = models.ForeignKey(News, on_delete=models.CASCADE)
+    patent_id = models.CharField(max_length=255)
 
 
 class User(models.Model):

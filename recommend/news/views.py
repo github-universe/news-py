@@ -1,6 +1,6 @@
 import jieba.analyse
 from django.http import HttpResponse, JsonResponse
-from .models import News, NewsKeyword, Keyword, User
+from .models import News, NewsKeyword, Keyword, User, NewsPatent
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
 import pysolr
@@ -32,6 +32,7 @@ class NewsView:
         self.content = news.content
         self.created = news.created
         self.keywords = []
+        self.patents = []
 
     def obj_dict(self):
         dic = dict()
@@ -40,6 +41,7 @@ class NewsView:
         dic['content'] = self.content
         dic['created'] = self.created.strftime("%Y-%m-%d %H:%M")
         dic['keywords'] = self.keywords
+        dic['patents'] = self.patents
         return dic
 
 
@@ -69,6 +71,11 @@ def newsToView(n):
     view = NewsView(n)
     for newsKeyword in NewsKeyword.objects.filter(news=n):
         view.keywords.append(newsKeyword.keyword.keyword)
+    if len(view.keywords) > 3:
+        view.keywords = view.keywords[:3]
+    patents = NewsPatent.objects.filter(news=n)
+    for patent in patents:
+        view.patents.append(patent.patent_id)
     return view
 
 
