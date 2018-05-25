@@ -34,7 +34,7 @@ class NewsAdmin(admin.ModelAdmin):
         for key in keywords:
             if len(patents) >= 5:
                 break
-            url = 'http://192.168.5.179:8888/patent/simple/search?ttl=' + key
+            url = 'http://localhost:8888/patent/simple/search?ttl=' + key
             res = json.loads(requests.get(url).content)
             num = min(5-len(patents), 2)
             patents += res['patent'][:num]
@@ -73,7 +73,8 @@ class NewsAdmin(admin.ModelAdmin):
                 'Content-Type': 'application/json',
             }
             print('SENDING NOTIFICATION: ' + data['open_id'])
-            requests.post(url, data=data, headers=headers)
+
+            requests.post(url, data=json.dumps(data), headers=headers)
 
 
 class KeywordAdmin(admin.ModelAdmin):
