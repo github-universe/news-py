@@ -30,14 +30,18 @@ class NewsAdmin(admin.ModelAdmin):
                 new_key = Keyword()
                 new_key.keyword = k
                 new_key.save()
-        patents = []
+        patents = set()
         for key in keywords:
             if len(patents) >= 5:
                 break
-            url = 'http://localhost:8888/patent/simple/search?ttl=' + key
-            res = json.loads(requests.get(url).content)
-            num = min(5-len(patents), 2)
-            patents += res['patent'][:num]
+            url = 'http://192.168.5.179:8888/patent/simple/search?ttl=' + key
+            try:
+                res = json.loads(requests.get(url).content)
+                num = min(5-len(patents), 2)
+                for patent in res['patent'][:num]:
+                    patents.add(patent)
+            except Exception:
+                continue
 
         for patent in patents:
             news_patent = NewsPatent()
@@ -61,7 +65,7 @@ class NewsAdmin(admin.ModelAdmin):
         if len(result) > 10:
             result = result[:10]
         for r in result:
-            url = 'http://192.168.14.151:8888/wxserver/send_message'
+            url = 'http://192.168.5.179:8888/wxserver/send_message'
             open_id = r['OPEN_ID']
             data = {
                 "open_id": open_id,
