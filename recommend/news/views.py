@@ -101,7 +101,7 @@ def get_similar_words(query_keywords):
             'X-PatSnap-Version': 'v1'
         }
         res = requests.post(url, data=json.dumps(data), headers=headers)
-        res_data = json.loads(res.content)['data']
+        res_data = json.loads(res.content.decode('utf-8'))['data']
         for d in res_data:
             similar_words.append(d['keyword'])
     return similar_words

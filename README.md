@@ -4,3 +4,6 @@
 2. pipenv install
 3. pipenv shell
 4. cd recommend && ./manage.py runserver
+
+###
+ patsnap winterfall

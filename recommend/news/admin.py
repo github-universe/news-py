@@ -69,7 +69,7 @@ class NewsAdmin(admin.ModelAdmin):
             open_id = r['OPEN_ID']
             data = {
                 "open_id": open_id,
-                "url": "http://192.168.14.217:8080/detail/" + str(obj.id),
+                "url": "http://192.168.5.179:8080/detail/" + str(obj.id),
                 "title": obj.title,
                 "content": obj.content[:100]
             }

@@ -6,3 +6,4 @@ Pipefile.lock
 *.meta
 *.zip
 .env
+Pipfile.lock.bk
