@@ -10,3 +10,6 @@
 
 ### query the keyword
 http://192.168.5.179:8983/patsnap/#/keyword/query
+
+### Deploy
+docker build -t local-dtr.zhihuiya.com/platform/news-py:Rel.1.0.0 ./recommend
