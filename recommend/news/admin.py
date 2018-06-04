@@ -36,7 +36,7 @@ class NewsAdmin(admin.ModelAdmin):
                 break
             url = 'http://192.168.5.179:8888/patent/simple/search?ttl=' + key
             try:
-                res = json.loads(requests.get(url).content)
+                res = json.loads(requests.get(url).content.decode('utf-8'))
                 num = min(5-len(patents), 2)
                 for patent in res['patent'][:num]:
                     patents.add(patent)

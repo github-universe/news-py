@@ -7,3 +7,6 @@
 ### steps to send news notification
 1. locate http://<host>:8000/admin/, test server username/password is patsnap/winterfall
 2. in the news tab, click news to enter a list, and add news content with the button on the top right corner.
+
+### query the keyword
+http://192.168.5.179:8983/patsnap/#/keyword/query
