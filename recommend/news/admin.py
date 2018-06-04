@@ -5,6 +5,7 @@ from django.contrib import admin
 from .models import News, NewsKeyword, Keyword, NewsPatent
 import jieba.analyse
 import requests
+import os
 
 
 # Register your models here.
@@ -34,7 +35,7 @@ class NewsAdmin(admin.ModelAdmin):
         for key in keywords:
             if len(patents) >= 5:
                 break
-            url = 'http://192.168.5.179:8888/patent/simple/search?ttl=' + key
+            url = os.environ['host'] + '/patent/simple/search?ttl=' + key
             try:
                 res = json.loads(requests.get(url).content)
                 num = min(5-len(patents), 2)
@@ -60,16 +61,16 @@ class NewsAdmin(admin.ModelAdmin):
             nk.save()
             key_li.append(k.keyword)
 
-        solr = pysolr.Solr('http://localhost:8983/patsnap/keyword', timeout=10)
+        solr = pysolr.Solr(os.environ['solr_url'], timeout=10)
         result = solr.search("KEYWORD:(" + ' OR '.join(key_li) + ')')
         if len(result) > 10:
             result = result[:10]
         for r in result:
-            url = 'http://192.168.5.179:8888/wxserver/send_message'
+            url = os.environ['host'] + '/wxserver/send_message'
             open_id = r['OPEN_ID']
             data = {
                 "open_id": open_id,
-                "url": "http://192.168.14.217:8080/detail/" + str(obj.id),
+                "url": os.environ['fe_host'] + "/detail/" + str(obj.id),
                 "title": obj.title,
                 "content": obj.content[:100]
             }

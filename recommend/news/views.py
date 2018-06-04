@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404
 import pysolr
 import json
 import requests
+import os
 
 
 class NewsListView:
@@ -88,7 +89,7 @@ def detail(request, newsId):
 def get_similar_words(query_keywords):
     similar_words = []
     if len(query_keywords) > 0:
-        url = 'http://qa-compute.zhihuiya.com/compute/kwd_helper_cn/'
+        url = os.environ['qa_host'] + 'compute/kwd_helper_cn/'
         data = {
             "data": {
                 "words": ','.join(query_keywords),
@@ -108,7 +109,7 @@ def get_similar_words(query_keywords):
 
 
 def save_to_solr(uid, openId, query):
-    solr = pysolr.Solr('http://localhost:8983/patsnap/keyword', timeout=10)
+    solr = pysolr.Solr(os.environ['solr_url'], timeout=10)
     doc = dict()
     result = solr.search('USER_ID:' + uid)
 
@@ -148,3 +149,4 @@ def save_query(request, openId, query):
         for u in users:
             save_to_solr(u.id, openId, query)
     return HttpResponse('success')
+
